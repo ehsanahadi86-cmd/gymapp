@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تغذیه | GymApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf6ef;--cd:#fff;--tx:#2a2118;--mu:#7a6b5a;--ac:#0f766e;--ac2:#c2410c;--bd:#e8dfd0;--tr:#eee6d8;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--cd:#231d17;--tx:#f3eadc;--mu:#a8998483;--mu:#a89984;--ac:#2dd4bf;--ac2:#fb923c;--bd:#3a3128;--tr:#352d24;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17130f;--cd:#231d17;--tx:#f3eadc;--mu:#a89984;--ac:#2dd4bf;--ac2:#fb923c;--bd:#3a3128;--tr:#352d24;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.7}
+main{max-width:560px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:4px 0}h2{font-size:15px;margin:0 0 10px}
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
+small,.mu{color:var(--mu);font-size:12px}small{display:block}
+input,select,button{font-family:inherit;font-size:14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);padding:8px 10px}
+button{background:var(--ac);color:var(--bg);border:0;font-weight:600;cursor:pointer}
+.big{font-size:38px;font-weight:800;line-height:1.2}
+.trk{height:10px;background:var(--tr);border-radius:9px;overflow:hidden;margin:8px 0}
+.trk i{display:block;height:100%;border-radius:9px;transition:width .3s}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin-top:10px}
+.g4 b{font-size:17px}
+.mi{margin-bottom:9px}.mi div{display:flex;justify-content:space-between;font-size:13px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)}
+.row:last-child{border:0}.row button{padding:4px 12px;font-size:16px}
+#res{max-height:260px;overflow-y:auto}
+.bar{display:flex;gap:6px;margin-bottom:8px}.bar>*{flex:1;min-width:0}
+.hint{background:var(--tr);border-radius:10px;padding:8px 10px;font-size:13px;margin-top:8px}
+.x{background:none;color:var(--ac2);padding:2px 8px}
+details summary{cursor:pointer;font-size:13px;color:var(--mu);margin-top:8px}
+.chip{padding:3px 10px;font-size:12px;margin:4px 0 0 4px}
+</style></head><body><main>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+<div><h1>🍚 کالری‌شمار سفره ایرانی</h1><small id="dt"></small></div>
+<input type="date" id="d">
+</div>
+
+<div class="cd" style="margin-top:10px">
+<small>کالری امروز</small>
+<div class="big"><span id="cal">۰</span> <small style="display:inline">از</small> <input id="goal" type="number" min="800" step="50" style="width:90px;font-size:16px;font-weight:600"></div>
+<div class="trk"><i id="bar"></i></div>
+<small id="rem"></small>
+<div class="g4" id="mac"></div><div id="macroProgress" style="margin-top:12px"></div>
+</div>
+
+<div class="cd"><h2>ریز مغذی‌ها (نسبت به نیاز روزانه بزرگسال)</h2><div id="mic"></div><div class="hint" id="hint" hidden></div></div>
+
+<div class="cd"><h2>هفته اخیر</h2><div id="wk" style="display:flex;gap:6px"></div><small id="wa" style="margin-top:6px"></small></div>
+<div class="cd" style="display:flex;justify-content:space-between;align-items:center"><div><h2 style="margin:0">💧 آب امروز</h2><small id="wc"></small></div><div><button onclick="wat(-1)" aria-label="کم">−</button> <button onclick="wat(1)" aria-label="زیاد">+</button></div></div>
+<div class="cd"><h2>افزودن غذا</h2>
+<div class="bar"><select id="meal"><option>صبحانه</option><option>ناهار</option><option>شام</option><option>میان‌وعده</option></select>
+<select id="um" onchange="um()"><option value="u">واحد</option><option value="g">گرم</option><option value="s">قاشق (برنج)</option></select><input id="qty" type="number" min="0.25" step="0.25" value="1" aria-label="مقدار"></div>
+<input id="q" placeholder="جستجو: قورمه‌سبزی، سنگک، ماست…" style="width:100%;margin-bottom:6px">
+<div id="res"></div>
+<details><summary>غذای دلخواه (کالری و درشت‌مغذی‌ها)</summary>
+<div class="bar" style="margin-top:8px"><input id="cn" placeholder="نام غذا"></div>
+<div class="bar"><input id="cc" type="number" placeholder="کالری"><input id="cp" type="number" placeholder="پروتئین g"></div>
+<div class="bar"><input id="cch" type="number" placeholder="کربوهیدرات g"><input id="cf" type="number" placeholder="چربی g"></div>
+<div class="bar"><input id="cfi" type="number" placeholder="فیبر g"><button onclick="addC()">ذخیره و افزودن</button></div>
+</details>
+</div>
+
+<div class="cd"><h2>خوراکی‌های امروز</h2><div id="log"></div></div>
+<div class="cd">
+  <h2>تنظیم اهداف تغذیه</h2>
+  <div class="bar">
+    <label style="flex:1">پروتئین (گرم)<input id="pgoal" type="number" min="40" max="300" step="5" style="width:100%"></label>
+    <label style="flex:1">کربوهیدرات (گرم)<input id="cgoal" type="number" min="50" max="500" step="5" style="width:100%"></label>
+    <label style="flex:1">چربی (گرم)<input id="fgoal" type="number" min="20" max="200" step="5" style="width:100%"></label>
+  </div>
+  <small>اهداف بر اساس نیاز و برنامه شخصی تنظیم شوند؛ مقادیر غذاها تخمینی هستند.</small>
+  <div class="bar" style="margin-top:10px">
+    <button onclick="exportCSV()">خروجی CSV</button>
+    <button onclick="backupJSON()">پشتیبان JSON</button>
+    <button onclick="document.getElementById('restoreFile').click()">بازیابی</button>
+  </div>
+  <input id="restoreFile" type="file" accept="application/json,.json" hidden onchange="restoreJSON(event)">
+  <small id="backupStatus"></small>
+</div>
+<p class="mu" style="text-align:center">مقادیر غذایی و ریزمغذی‌ها تخمینی‌اند؛ به دستور پخت، برند و اندازه سهم وابسته‌اند و جایگزین ارزیابی متخصص تغذیه نیستند.</p>
+</main>
+<script>
+const F=`برنج آبکش (چلو)|۱ بشقاب|260,5,57,.5,1,.4,20,0,0,0,70,10
+کته|۱ بشقاب|300,6,60,4,1,.5,20,0,0,0,80,250
+نان سنگک|۱ کف دست (۱۰۰ گرم)|250,8,52,1,5,2.5,20,0,0,0,200,400
+نان بربری|۱ کف دست (۱۰۰ گرم)|270,9,53,2,3,2.5,20,0,0,0,150,450
+نان لواش|۱ عدد|135,4.5,28,.7,1,1.2,10,0,0,0,60,250
+نان تافتون|۱ عدد|215,7,44,1,2,1.8,15,0,0,0,100,350
+کباب کوبیده|۱ سیخ|250,18,2,19,.2,2.2,20,1,10,2,250,450
+جوجه کباب (سینه)|۱ سیخ|250,38,2,9,0,1.2,20,2,20,.5,400,350
+کباب برگ|۱ سیخ (۱۰۰ گرم)|220,24,1,13,0,2.5,15,0,10,2,300,350
+قورمه‌سبزی|۱ پیمانه (۲۵۰ گرم)|280,17,14,17,5,5,90,25,300,1.5,600,600
+قیمه|۱ پیمانه|330,15,28,17,5,3,60,12,40,1,650,650
+فسنجان|۱ پیمانه|450,20,20,34,4,3.5,90,6,40,1,550,500
+خورشت کرفس|۱ پیمانه|260,15,12,16,4,3,100,20,150,1.5,600,550
+خورشت بادمجان|۱ پیمانه|300,14,14,21,5,2.5,60,10,50,1.5,600,550
+آبگوشت / دیزی|۱ کاسه|520,30,45,23,9,4.5,90,10,10,2,900,900
+عدسی|۱ کاسه|230,13,35,4,10,4.5,40,5,20,0,550,500
+آش رشته|۱ کاسه|250,12,38,6,8,4,100,10,150,.3,500,700
+سوپ جو|۱ کاسه|150,7,22,4,4,1.5,40,5,150,.3,300,600
+زرشک‌پلو با مرغ|۱ بشقاب|650,35,85,18,2,2.5,40,5,40,1,500,600
+باقالی‌پلو با ماهیچه|۱ بشقاب|750,38,90,25,6,4,50,5,10,2,700,500
+عدس‌پلو|۱ بشقاب|480,12,80,12,6,3.5,40,3,20,0,500,350
+لوبیا‌پلو|۱ بشقاب|480,14,75,13,6,3,60,5,20,0,550,350
+کوکو سبزی|۱ قطعه|190,10,5,14,2,3,80,15,300,1,250,300
+کتلت|۲ عدد|280,14,15,18,1,2.2,30,3,10,1,320,500
+ماکارونی|۱ بشقاب|420,15,70,10,3,2.5,30,3,30,.3,300,450
+کشک بادمجان|۱ پیش‌غذا|180,6,10,13,3,1.2,100,5,40,.3,400,450
+میرزا قاسمی|۱ پیش‌غذا|160,6,10,11,3,1.5,40,10,60,.4,350,400
+حلیم|۱ کاسه|300,14,36,11,4,2,60,0,10,1,350,400
+املت (۲ تخم‌مرغ)|۱ تابه|300,16,10,22,2,2.5,70,15,200,1,450,450
+نیمرو (۲ تخم‌مرغ)|۱ پرس|200,13,1,15,0,1.8,56,0,170,1.1,140,150
+تخم‌مرغ آب‌پز|۱ عدد|78,6,.6,5,0,.9,28,0,80,.5,63,62
+پنیر سفید|۱ لقمه (۳۰ گرم)|80,4.5,.8,6.5,0,.1,150,0,50,.4,30,350
+ماست|۱ کاسه|90,5,7,5,0,.1,180,1,40,.5,230,60
+ماست و خیار|۱ کاسه|100,5,8,4,1,.2,180,4,40,.5,350,150
+دوغ|۱ لیوان|40,2.5,3.5,1.5,0,.1,100,1,10,.3,120,350
+شیر|۱ لیوان|120,8,12,5,0,0,290,0,100,1.2,350,100
+شیر برنج|۱ کاسه|260,6,40,8,.5,.3,150,0,50,.4,200,60
+ماهی قزل‌آلا کبابی|۱ فیله|250,33,0,12,0,.8,100,2,60,6,700,100
+مرغ پخته (ران)|۱ عدد|280,28,0,18,0,1.3,15,0,40,.6,250,120
+سالاد شیرازی|۱ کاسه|35,1.5,7,.4,2,.6,25,20,60,0,350,100
+سبزی خوردن|۱ بشقاب|15,1.5,2,.3,2,2,60,15,300,0,250,20
+خیار|۱ عدد|15,.7,3.6,.1,.5,.3,16,3,5,0,147,2
+گوجه‌فرنگی|۱ عدد|22,1,5,.2,1.5,.4,12,17,50,0,290,6
+سیب‌زمینی سرخ‌کرده|۱ پرس|330,4,42,17,4,1,20,15,0,0,800,300
+سیب|۱ عدد|95,.5,25,.3,4,.2,11,8,5,0,195,2
+موز|۱ عدد|105,1.3,27,.4,3,.3,6,10,4,0,420,1
+هندوانه|۱ برش|90,2,23,.5,1,1,20,24,170,0,350,3
+خرما|۳ عدد|170,1,45,0,4,.5,40,0,0,0,350,1
+گردو|۳۰ گرم|195,4.5,4,19,2,.9,30,.4,0,0,130,1
+بادام|۳۰ گرم|175,6,6,15,3.5,1.1,75,0,0,0,200,0
+پسته|۳۰ گرم|170,6,8,14,3,1.2,30,1,7,0,300,0
+چای با دو حبه قند|۱ لیوان|30,0,8,0,0,0,0,0,0,0,50,0`.split('\n').map(l=>{const[n,u,v]=l.split('|');return{n,u,v:v.split(',').map(Number)}});
+const W=[200,200,100,100,50,80,100,150,100,250,250,250,250,250,400,300,300,300,350,400,300,300,120,120,250,150,150,250,200,110,50,30,150,150,250,240,200,150,120,150,50,100,120,150,180,120,300,60,30,30,30,200],SP={0:30,1:30,20:30,21:30};
+F.forEach((f,i)=>{f.w=W[i];if(SP[i])f.sp=SP[i]});
+const H={5:[15,40,9],6:[32,34,31],7:[42,39,46],8:[9,22,40],9:[37,30,32],10:[45,47,15]};
+const M=[['آهن','mg',5,15,0,'عدسی، سبزی خوردن، گوشت'],['کلسیم','mg',6,1000,0,'ماست، دوغ، پنیر، شیر'],['ویتامین C','mg',7,80,0,'گوجه، سالاد، هندوانه، سیب'],['ویتامین A','µg',8,800,0,'قورمه‌سبزی، کوکو، سبزی خوردن'],['ویتامین B12','µg',9,2.4,0,'ماهی، تخم‌مرغ، گوشت، لبنیات'],['پتاسیم','mg',10,3500,0,'موز، خرما، سیب‌زمینی، حبوبات'],['سدیم (سقف)','mg',11,2300,1,'']];
+const KEY='kcal-ir-v1';let S={goal:2000,macroGoals:{p:160,c:200,f:65},customFoods:[],days:{},w:{}};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){};S.macroGoals=S.macroGoals||{p:160,c:200,f:65};S.customFoods=S.customFoods||[];S.days=S.days||{};S.w=S.w||{};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const fa=(n,d=0)=>(+n).toLocaleString('fa-IR',{maximumFractionDigits:d});
+const norm=s=>s.replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/\u200c/g,' ').trim();
+const $=id=>document.getElementById(id);
+const MEALS=['صبحانه','ناهار','شام','میان‌وعده'];
+let day=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const h=new Date().getHours();$('meal').selectedIndex=h<11?0:h<16?1:h<19?3:2;
+function list(){const q=norm($('q').value);const base=F.map((f,i)=>({f,act:`add(${i})`}));const custom=(S.customFoods||[]).map((f,i)=>({f,act:`addCustomFood(${i})`}));$('res').innerHTML=base.concat(custom).filter(x=>(!q||norm(x.f.n).includes(q))&&($('um').value!=='s'||x.f.sp)).map(x=>`<div class="row"><div><b>${x.f.n}</b><small>${x.f.u||'۱۰۰ گرم'} · ${fa(x.f.v[0])} کالری</small></div><button onclick="${x.act}" aria-label="افزودن">+</button></div>`).join('')||'<p class="mu">پیدا نشد؛ از «غذای دلخواه» استفاده کنید.</p>'}
+function push(e){(S.days[day]=S.days[day]||[]).push(e);save();render()}
+function add(i){const f=F[i],m=$('um').value,x=parseFloat($('qty').value)||1;
+const k=m==='g'?x/f.w:m==='s'?x*f.sp/f.w:x;
+const l=m==='g'?`${fa(x)} گرم`:m==='s'?`${fa(x)} قاشق غذاخوری`:`${fa(x,2)} × ${f.u}`;
+push({m:$('meal').value,n:f.n,u:f.u,q:k,l,v:f.v})}
+function push1(i){const f=F[i];push({m:$('meal').value,n:f.n,u:f.u,q:1,l:`۱ × ${f.u}`,v:f.v})}
+function um(){const m=$('um').value,q=$('qty');q.value=m==='g'?100:m==='s'?3:1;q.step=m==='g'?10:m==='s'?1:.25;q.min=m==='u'?.25:1;list()}
+function wat(d){S.w=S.w||{};S.w[day]=Math.max(0,(S.w[day]||0)+d);save();render()}
+function addC(){const c=parseFloat($('cc').value);if(!c||c<0)return;const f={n:$('cn').value.trim()||'غذای دلخواه',u:'۱۰۰ گرم',w:100,v:[c,+$('cp').value||0,+$('cch').value||0,+$('cf').value||0,+$('cfi').value||0,0,0,0,0,0,0,0]};S.customFoods.push(f);save();push({m:$('meal').value,n:f.n,u:f.u,q:1,l:'۱۰۰ گرم',v:f.v});['cn','cc','cp','cch','cf','cfi'].forEach(id=>$(id).value='');list()}
+function addCustomFood(i){const f=S.customFoods[i];if(!f)return;const x=parseFloat($('qty').value)||1;const mode=$('um').value;const k=mode==='g'?x/100:mode==='s'?x/100:x;push({m:$('meal').value,n:f.n,u:f.u,q:k,l:mode==='g'?`${fa(x)} گرم`:`${fa(k,2)} × ${f.u}`,v:f.v})}
+function del(i){S.days[day].splice(i,1);save();render()}
+function render(){
+const L=S.days[day]||[],t=Array(12).fill(0);L.forEach(e=>e.v.forEach((x,i)=>t[i]+=x*e.q));
+$('dt').textContent=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{dateStyle:'full'}).format(new Date(day+'T12:00'));
+$('d').value=day;$('goal').value=S.goal;$('cal').textContent=fa(t[0]);
+const over=t[0]>S.goal;$('bar').style.width=Math.min(t[0]/S.goal*100,100)+'%';$('bar').style.background=over?'var(--ac2)':'var(--ac)';
+$('rem').textContent=over?`${fa(t[0]-S.goal)} کالری بیش از هدف`:`${fa(S.goal-t[0])} کالری باقی‌مانده`;
+$('mac').innerHTML=[['پروتئین',1],['کربوهیدرات',2],['چربی',3],['فیبر',4]].map(([n,i])=>`<div><b>${fa(t[i])}</b><small>${n} (گرم)</small></div>`).join('');
+const mg=S.macroGoals||{p:160,c:200,f:65};
+$('macroProgress').innerHTML=[['پروتئین',1,mg.p],['کربوهیدرات',2,mg.c],['چربی',3,mg.f]].map(([n,i,g])=>{const p=g>0?t[i]/g*100:0;return `<div class="mi"><div><span>${n}</span><span>${fa(t[i],1)} / ${fa(g)} گرم</span></div><div class="trk" style="margin:3px 0"><i style="width:${Math.min(p,100)}%;background:var(--ac)"></i></div></div>`}).join('');
+$('pgoal').value=mg.p;$('cgoal').value=mg.c;$('fgoal').value=mg.f;
+
+$('mic').innerHTML=M.map(m=>{const p=t[m[2]]/m[3]*100,bad=m[4]&&p>100;return`<div class="mi"><div><span>${m[0]}</span><span>${fa(t[m[2]],1)} از ${fa(m[3],1)} ${m[1]} · ${fa(p)}٪</span></div><div class="trk" style="margin:3px 0"><i style="width:${Math.min(p,100)}%;background:${bad?'var(--ac2)':'var(--ac)'}"></i></div></div>`}).join('');
+const low=M.filter(m=>!m[4]&&t[m[2]]<m[3]*.5);
+$('hint').hidden=!L.length||!low.length;
+$('hint').innerHTML=low.map(m=>`<b>${m[0]}</b> کم است: ${m[5]}<br>`+H[m[2]].map(i=>`<button class="chip" onclick="push1(${i})">+ ${F[i].n}</button>`).join('')).join('<br>');
+$('log').innerHTML=MEALS.map(m=>{const es=L.map((e,i)=>[e,i]).filter(([e])=>e.m===m);if(!es.length)return'';
+return`<h2 style="margin-top:8px">${m} · ${fa(es.reduce((s,[e])=>s+e.v[0]*e.q,0))} کالری</h2>`+es.map(([e,i])=>`<div class="row"><div><b>${e.n}</b><small>${e.l||fa(e.q,2)+' × '+(e.u||'واحد')} · ${fa(e.v[0]*e.q)} کالری</small></div><button class="x" onclick="del(${i})" aria-label="حذف">✕</button></div>`).join('')}).join('')||'<p class="mu">هنوز چیزی ثبت نشده است.</p>';extra()}
+function extra(){const D=[];for(let k=6;k>=0;k--){const d=new Date(day+'T12:00');d.setDate(d.getDate()-k);const s=d.toISOString().slice(0,10);D.push([d,(S.days[s]||[]).reduce((a,e)=>a+e.v[0]*e.q,0)])}
+const mx=Math.max(S.goal,...D.map(x=>x[1]));
+$('wk').innerHTML=D.map(([d,c])=>`<div style="flex:1;text-align:center"><div style="height:70px;display:flex;align-items:flex-end"><i style="display:block;width:100%;border-radius:6px 6px 0 0;height:${c/mx*100}%;background:${c>S.goal?'var(--ac2)':'var(--ac)'}"></i></div><small>${new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:'short'}).format(d)}</small></div>`).join('');
+const a=D.filter(x=>x[1]>0);$('wa').textContent=a.length?`میانگین روزهای ثبت‌شده: ${fa(a.reduce((s,x)=>s+x[1],0)/a.length)} کالری`:'';
+$('wc').textContent=fa((S.w||{})[day]||0)+' از ۸ لیوان'}
+$('goal').onchange=e=>{S.goal=Math.max(800,+e.target.value||2000);save();render()};
+['pgoal','cgoal','fgoal'].forEach((id,i)=>$(id).onchange=e=>{const k=['p','c','f'][i];S.macroGoals=S.macroGoals||{};S.macroGoals[k]=Math.max(1,+e.target.value||1);save();render()});
+function downloadBlob(name,content,type){const b=new Blob([content],{type});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1200)}
+function backupJSON(){downloadBlob('gymapp-nutrition-'+day+'.json',JSON.stringify(S,null,2),'application/json');$('backupStatus').textContent='پشتیبان اطلاعات تغذیه آماده شد.'}
+function restoreJSON(e){const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||typeof d!=='object'||!d.days)throw Error();if(!confirm('اطلاعات تغذیه فعلی با فایل جایگزین شود؟'))return;S=d;S.macroGoals=S.macroGoals||{p:160,c:200,f:65};S.customFoods=S.customFoods||[];save();render();list();$('backupStatus').textContent='بازیابی با موفقیت انجام شد.'}catch(err){alert('فایل پشتیبان معتبر نیست.')}e.target.value=''};r.readAsText(f)}
+function exportCSV(){const rows=[['تاریخ','وعده','غذا','مقدار','کالری','پروتئین','کربوهیدرات','چربی','فیبر']];Object.keys(S.days||{}).sort().forEach(d=>(S.days[d]||[]).forEach(x=>rows.push([d,x.m,x.n,x.l||x.q,...x.v.slice(0,5).map(v=>Math.round(v*x.q*10)/10)])));const csv='\\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');downloadBlob('gymapp-nutrition.csv',csv,'text/csv;charset=utf-8');$('backupStatus').textContent='خروجی CSV آماده شد.'}
+
+$('d').onchange=e=>{day=e.target.value||day;render()};
+$('q').oninput=list;list();render();
+</script></body></html>
